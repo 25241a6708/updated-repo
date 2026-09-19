@@ -2,13 +2,61 @@
   "source": "github",
   "repo": "25241a6708/nexus-cause",
   "capabilities": [
-    {"capability": "code", "source": "TanStack Start SPA (SocialCause dashboard: missions, leaderboard, impact map, profile, SOS)", "outcome": "copy src/, public/, roadmap.md", "status": "pending", "next_action": "rsync into project"},
-    {"capability": "schema", "source": "none (static demo data in src/lib/impact-data.ts)", "outcome": "not applicable", "status": "verified", "next_action": null},
-    {"capability": "records", "source": "none — app ships with built-in demo data", "outcome": "not applicable", "status": "verified", "next_action": null},
-    {"capability": "auth", "source": "none", "outcome": "not applicable", "status": "verified", "next_action": null},
-    {"capability": "external_providers", "source": "none (no integrations detected)", "outcome": "not applicable", "status": "verified", "next_action": null},
-    {"capability": "public_endpoints", "source": "none", "outcome": "not applicable", "status": "verified", "next_action": null},
-    {"capability": "dependencies", "source": "leaflet, react-leaflet, @types/leaflet missing from target", "outcome": "bun add", "status": "pending", "next_action": "install packages"},
-    {"capability": "verification", "source": "build + preview routes", "outcome": "verify all 6 routes render", "status": "pending", "next_action": "check build logs and preview"}
+    {
+      "capability": "code",
+      "source": "TanStack Start SPA (SocialCause dashboard: missions, leaderboard, impact map, profile, SOS)",
+      "outcome": "copy src/, public/, roadmap.md",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "schema",
+      "source": "none (static demo data in src/lib/impact-data.ts)",
+      "outcome": "not applicable",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "records",
+      "source": "none \u2014 app ships with built-in demo data",
+      "outcome": "not applicable",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "auth",
+      "source": "none",
+      "outcome": "not applicable",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "external_providers",
+      "source": "none (no integrations detected)",
+      "outcome": "not applicable",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "public_endpoints",
+      "source": "none",
+      "outcome": "not applicable",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "dependencies",
+      "source": "leaflet, react-leaflet, @types/leaflet missing from target",
+      "outcome": "bun add",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "verification",
+      "source": "build + preview routes",
+      "outcome": "verify all 6 routes render",
+      "status": "verified",
+      "next_action": null
+    }
   ]
 }
