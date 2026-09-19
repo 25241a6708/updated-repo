@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { ArrowRight, CheckCircle2, Gauge, MapPin, Package, ShieldCheck, Timer, TriangleAlert } from "lucide-react";
+import { ArrowRight, CheckCircle2, Gauge, MapPin, Package, ShieldCheck, Sparkles, Timer, TriangleAlert, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,9 +11,39 @@ export type MatchRequest = {
   urgent?: boolean;
 };
 
-type Ctx = { open: (req: MatchRequest) => void };
+type Ctx = {
+  open: (req: MatchRequest) => void;
+  /** Mission progress state */
+  fulfilled: boolean;
+  mealsFulfilled: number;
+  /** Impact points shown in the nav header */
+  points: number;
+  /** Extra activity-feed entries added during this session */
+  feed: { title: string; meta: string }[];
+  /** Confetti burst flag after fulfilment */
+  celebrate: boolean;
+  /** Restaurant A supply-drop simulation */
+  shortageSimulated: boolean;
+  simulateShortage: () => void;
+  /** Dynamic rematch modal */
+  rematchOpen: boolean;
+  acceptRematch: () => void;
+  dismissRematch: () => void;
+};
 
-const MatchContext = createContext<Ctx>({ open: () => {} });
+const MatchContext = createContext<Ctx>({
+  open: () => {},
+  fulfilled: false,
+  mealsFulfilled: 70,
+  points: 380,
+  feed: [],
+  celebrate: false,
+  shortageSimulated: false,
+  simulateShortage: () => {},
+  rematchOpen: false,
+  acceptRematch: () => {},
+  dismissRematch: () => {},
+});
 
 export function useMatchEngine() {
   return useContext(MatchContext);
@@ -88,6 +118,19 @@ const CANDIDATES: MatchCandidate[] = [
   },
 ];
 
+/** Dynamic rematch candidate surfaced after the Restaurant A supply drop. */
+const REMATCH_CANDIDATE: MatchCandidate = {
+  id: "local-grocery",
+  name: "Local Grocery",
+  available: 30,
+  distanceKm: 2.1,
+  verified: true,
+  deadlineNote: "Available before 6:30 PM today",
+  distanceNote: "2.1 km · 9 min drive",
+  compatNote: "Prepared Food match · verified partner",
+  scores: { qty: 100, dist: 80, urgency: 100, deadline: 90, compat: 90 },
+};
+
 const FACTORS = [
   { key: "qty", label: "Quantity Compatibility", weight: "30%", icon: Package },
   { key: "dist", label: "Distance Fit", weight: "25%", icon: MapPin },
@@ -95,6 +138,42 @@ const FACTORS = [
   { key: "deadline", label: "Deadline Compatibility", weight: "15%", icon: Timer },
   { key: "compat", label: "Resource Compatibility", weight: "10%", icon: ShieldCheck },
 ] as const;
+
+const CONFETTI_COLORS = ["#22c55e", "#f0b429", "#3b82f6", "#ef4444", "#a855f7", "#14b8a6"];
+
+function ConfettiBurst() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 0.6,
+        duration: 2 + Math.random() * 1.5,
+        size: 6 + Math.random() * 8,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length]!,
+        rotate: Math.random() * 360,
+      })),
+    [],
+  );
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[100] overflow-hidden" aria-hidden>
+      <style>{`@keyframes confetti-fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }`}</style>
+      {pieces.map((p, i) => (
+        <span
+          key={i}
+          className="absolute top-0 rounded-[2px]"
+          style={{
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.size * 0.6,
+            backgroundColor: p.color,
+            transform: `rotate(${p.rotate}deg)`,
+            animation: `confetti-fall ${p.duration}s ease-in ${p.delay}s forwards`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 function BreakdownDialog({
   candidate,
@@ -160,12 +239,86 @@ export function MatchEngineProvider({ children }: { children: ReactNode }) {
   const [request, setRequest] = useState<MatchRequest | null>(null);
   const [breakdown, setBreakdown] = useState<MatchCandidate | null>(null);
 
+  // Prompt 3 — contribution coordination & dynamic rematching state
+  const [fulfilled, setFulfilled] = useState(false);
+  const [points, setPoints] = useState(380);
+  const [feed, setFeed] = useState<{ title: string; meta: string }[]>([]);
+  const [celebrate, setCelebrate] = useState(false);
+  const [shortageSimulated, setShortageSimulated] = useState(false);
+  const [rematchOpen, setRematchOpen] = useState(false);
+
   const open = useCallback((req: MatchRequest) => setRequest(req), []);
-  const value = useMemo(() => ({ open }), [open]);
+
+  const coordinate = useCallback((candidate: MatchCandidate) => {
+    setFulfilled(true);
+    setShortageSimulated(false);
+    setPoints((p) => p + 30);
+    setFeed((f) => [
+      {
+        title: `Coordinated 30 meals from ${candidate.name.replace(" Restaurant", "")} to Hope Community Center.`,
+        meta: "Just now · Impact Matching Engine",
+      },
+      ...f,
+    ]);
+    setCelebrate(true);
+    window.setTimeout(() => setCelebrate(false), 4000);
+    toast.success("Mission fulfilled!", {
+      description: `${candidate.name} covers the remaining 30 meals — 100/100 complete. +30 Impact Points.`,
+    });
+    setRequest(null);
+  }, []);
+
+  const simulateShortage = useCallback(() => {
+    if (!fulfilled || shortageSimulated) return;
+    setFulfilled(false);
+    setShortageSimulated(true);
+    toast.warning("⚠️ Supply shortage detected! Re-running Impact Matching Engine...", {
+      description: "Restaurant A supply dropped 60 → 30 meals. New 30-meal gap detected.",
+    });
+    window.setTimeout(() => setRematchOpen(true), 900);
+  }, [fulfilled, shortageSimulated]);
+
+  const acceptRematch = useCallback(() => {
+    setRematchOpen(false);
+    setFulfilled(true);
+    setFeed((f) => [
+      {
+        title: "Accepted rematch: 30 meals from Local Grocery to Hope Community Center.",
+        meta: "Just now · Dynamic Re-Matching",
+      },
+      ...f,
+    ]);
+    setCelebrate(true);
+    window.setTimeout(() => setCelebrate(false), 4000);
+    toast.success("Rematch accepted!", {
+      description: "Mission instantly restored to 100/100 — Fulfilled!",
+    });
+  }, []);
+
+  const dismissRematch = useCallback(() => setRematchOpen(false), []);
+
+  const value = useMemo(
+    () => ({
+      open,
+      fulfilled,
+      mealsFulfilled: fulfilled ? 100 : 70,
+      points,
+      feed,
+      celebrate,
+      shortageSimulated,
+      simulateShortage,
+      rematchOpen,
+      acceptRematch,
+      dismissRematch,
+    }),
+    [open, fulfilled, points, feed, celebrate, shortageSimulated, simulateShortage, rematchOpen, acceptRematch, dismissRematch],
+  );
 
   return (
     <MatchContext.Provider value={value}>
       {children}
+      {celebrate && <ConfettiBurst />}
+
       <Dialog open={!!request} onOpenChange={(o) => !o && setRequest(null)}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
           <DialogHeader>
@@ -215,16 +368,7 @@ export function MatchEngineProvider({ children }: { children: ReactNode }) {
                     <Button variant="outline" className="flex-1" onClick={() => setBreakdown(candidate)}>
                       WHY THIS MATCH?
                     </Button>
-                    <Button
-                      variant="impact"
-                      className="flex-1"
-                      onClick={() => {
-                        toast.success("Coordination started", {
-                          description: `${candidate.name} will cover the remaining meals — we'll notify Hope Community Center.`,
-                        });
-                        setRequest(null);
-                      }}
-                    >
+                    <Button variant="impact" className="flex-1" onClick={() => coordinate(candidate)}>
                       COORDINATE CONTRIBUTION <ArrowRight />
                     </Button>
                   </div>
@@ -236,6 +380,66 @@ export function MatchEngineProvider({ children }: { children: ReactNode }) {
       </Dialog>
 
       {breakdown && <BreakdownDialog candidate={breakdown} onClose={() => setBreakdown(null)} />}
+
+      {/* Dynamic Re-Match modal — appears after the simulated supply drop */}
+      <Dialog open={rematchOpen} onOpenChange={(o) => !o && dismissRematch()}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <div className="mb-1 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-wide text-urgent">
+              <Zap className="size-4" /> Dynamic Re-Matching
+            </div>
+            <DialogTitle className="text-2xl font-extrabold">NEW MATCH FOUND</DialogTitle>
+            <DialogDescription>
+              The Impact Matching Engine re-ran instantly after the supply shortage and found a replacement contributor.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-positive/50 bg-positive/5 p-4 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold">Restaurant C - {REMATCH_CANDIDATE.name}</h3>
+                  <CheckCircle2 className="size-4 text-positive" aria-label="Verified Contributor" />
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {REMATCH_CANDIDATE.available} meals available · {REMATCH_CANDIDATE.distanceKm} km away · Verified Contributor ✓
+                </p>
+              </div>
+              <span className="inline-flex items-center rounded-sm bg-positive px-2.5 py-1 text-[11px] font-extrabold uppercase text-positive-foreground shadow-impact">
+                {calculateMatchScore(REMATCH_CANDIDATE.scores)}% MATCH
+              </span>
+            </div>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Button variant="outline" className="flex-1" onClick={dismissRematch}>
+                DISMISS
+              </Button>
+              <Button variant="impact" className="flex-1" onClick={acceptRematch}>
+                ACCEPT REMATCH <ArrowRight />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Floating demo controller */}
+      <div className="fixed bottom-4 right-4 z-[90] w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card/95 p-3 shadow-2xl backdrop-blur">
+        <p className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide">
+          <Zap className="size-4 text-[#f0b429]" /> ⚡ Demo Controls
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-start text-left text-xs font-bold"
+          disabled={!fulfilled || shortageSimulated}
+          onClick={simulateShortage}
+        >
+          <Sparkles className="size-3.5 shrink-0 text-urgent" />
+          Simulate Restaurant A Supply Drop (60 → 30 meals)
+        </Button>
+        {!fulfilled && !shortageSimulated && (
+          <p className="mt-2 text-[10px] text-muted-foreground">Coordinate a contribution first, then simulate the supply drop.</p>
+        )}
+      </div>
     </MatchContext.Provider>
   );
 }
