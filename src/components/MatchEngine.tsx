@@ -128,7 +128,7 @@ const REMATCH_CANDIDATE: MatchCandidate = {
   deadlineNote: "Available before 6:30 PM today",
   distanceNote: "2.1 km · 9 min drive",
   compatNote: "Prepared Food match · verified partner",
-  scores: { qty: 100, dist: 80, urgency: 100, deadline: 90, compat: 90 },
+  scores: { qty: 100, dist: 80, urgency: 100, deadline: 80, compat: 100 },
 };
 
 const FACTORS = [
