@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMatchEngine } from "@/components/MatchEngine";
 
 const links = [
   { to: "/", label: "Dashboard" },
@@ -12,6 +13,7 @@ const links = [
 ] as const;
 
 export function SiteHeader() {
+  const { points } = useMatchEngine();
   return (
     <header className="sticky top-0 z-[1000] border-b border-border bg-card/95 backdrop-blur">
       <div className="mx-auto flex max-w-[1600px] flex-col px-4 lg:px-8">
@@ -39,7 +41,7 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-4">
             <div className="hidden items-center gap-5 border-l border-border pl-5 lg:flex">
-              <Metric value="380" label="Impact Points" />
+              <Metric value={String(points)} label="Impact Points" />
               <Metric value="240" label="Meals Coordinated" />
               <Metric value="520" label="People Reached" />
             </div>

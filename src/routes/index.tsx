@@ -25,7 +25,7 @@ const toneClass: Record<string, string> = {
 };
 
 function Dashboard() {
-  const { open } = useMatchEngine();
+  const { open, fulfilled, mealsFulfilled, feed } = useMatchEngine();
   const top = contributors[0]!;
 
   return (
@@ -38,9 +38,15 @@ function Dashboard() {
                 <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase text-muted-foreground">
                   <Radio className="size-4 text-urgent" /> Priority response
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-sm bg-urgent px-2.5 py-1 text-[11px] font-extrabold text-urgent-foreground">
-                  <span className="size-1.5 animate-pulse rounded-full bg-urgent-foreground" /> URGENT
-                </span>
+                {fulfilled ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-sm bg-positive px-2.5 py-1 text-[11px] font-extrabold text-positive-foreground shadow-impact">
+                    <PackageCheck className="size-3.5" /> MISSION FULFILLED
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-sm bg-urgent px-2.5 py-1 text-[11px] font-extrabold text-urgent-foreground">
+                    <span className="size-1.5 animate-pulse rounded-full bg-urgent-foreground" /> URGENT
+                  </span>
+                )}
               </div>
               <h1 className="max-w-3xl text-3xl font-extrabold leading-tight md:text-5xl">URGENT IMPACT MISSION</h1>
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -49,11 +55,15 @@ function Dashboard() {
               </div>
               <div className="mt-8 max-w-3xl">
                 <div className="mb-3 flex items-end justify-between gap-4">
-                  <p className="text-sm font-bold">70 / 100 Meals Fulfilled <span className="text-positive">(70%)</span></p>
-                  <p className="text-xs font-semibold text-urgent">30 Meals Remaining</p>
+                  <p className="text-sm font-bold">{mealsFulfilled} / 100 Meals Fulfilled <span className="text-positive">({mealsFulfilled}%)</span></p>
+                  {fulfilled ? (
+                    <p className="text-xs font-semibold text-positive">100% Complete 🎉</p>
+                  ) : (
+                    <p className="text-xs font-semibold text-urgent">30 Meals Remaining</p>
+                  )}
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full w-[70%] rounded-full bg-positive shadow-impact" />
+                  <div className="h-full rounded-full bg-positive shadow-impact transition-all duration-700" style={{ width: `${mealsFulfilled}%` }} />
                 </div>
               </div>
             </div>
@@ -132,6 +142,17 @@ function Dashboard() {
               <span className="rounded-sm bg-positive/10 px-2 py-1 text-[10px] font-extrabold uppercase text-positive">Live</span>
             </div>
             <div className="px-5">
+              {feed.map((entry) => (
+                <div key={entry.title} className="flex gap-4 border-b border-border py-4 animate-fade-in">
+                  <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-md text-positive bg-positive/10">
+                    <PackageCheck className="size-4" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold leading-snug">{entry.title}</p>
+                    <p className="mt-1.5 text-xs text-muted-foreground">{entry.meta}</p>
+                  </div>
+                </div>
+              ))}
               {activities.map((activity) => (
                 <div key={activity.title} className="flex gap-4 border-b border-border py-4 last:border-0">
                   <span className={`mt-0.5 grid size-9 shrink-0 place-items-center rounded-md ${toneClass[activity.tone]}`}>
