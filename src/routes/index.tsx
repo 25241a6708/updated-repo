@@ -26,7 +26,7 @@ const toneClass: Record<string, string> = {
 
 function Dashboard() {
   const { open } = useMatchEngine();
-  const top = contributors[0];
+  const top = contributors[0]!;
 
   return (
     <main className="grid-surface px-4 py-8 lg:px-8 lg:py-10">

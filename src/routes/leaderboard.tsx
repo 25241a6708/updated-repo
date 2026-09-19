@@ -28,7 +28,7 @@ const podiumStyle = [
 function LeaderboardPage() {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
   const rows = useMemo(() => (filter === "All" ? contributors : contributors.filter((c) => c.category === filter)), [filter]);
-  const podium = [contributors[1], contributors[0], contributors[2]];
+  const podium = [contributors[1]!, contributors[0]!, contributors[2]!];
 
   return (
     <main className="grid-surface px-4 py-8 lg:px-8 lg:py-10">
