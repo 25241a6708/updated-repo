@@ -421,25 +421,6 @@ export function MatchEngineProvider({ children }: { children: ReactNode }) {
         </DialogContent>
       </Dialog>
 
-      {/* Floating demo controller */}
-      <div className="fixed bottom-4 right-4 z-[90] w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card/95 p-3 shadow-2xl backdrop-blur">
-        <p className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide">
-          <Zap className="size-4 text-[#f0b429]" /> ⚡ Demo Controls
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start text-left text-xs font-bold"
-          disabled={!fulfilled || shortageSimulated}
-          onClick={simulateShortage}
-        >
-          <Sparkles className="size-3.5 shrink-0 text-urgent" />
-          Simulate Restaurant A Supply Drop (60 → 30 meals)
-        </Button>
-        {!fulfilled && !shortageSimulated && (
-          <p className="mt-2 text-[10px] text-muted-foreground">Coordinate a contribution first, then simulate the supply drop.</p>
-        )}
-      </div>
     </MatchContext.Provider>
   );
 }
