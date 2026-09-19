@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { ArrowRight, CheckCircle2, Gauge, MapPin, Package, ShieldCheck, Sparkles, Timer, TriangleAlert, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Gauge, MapPin, Package, ShieldCheck, Timer, TriangleAlert, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
