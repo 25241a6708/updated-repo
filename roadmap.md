@@ -10,4 +10,4 @@
 - [x] Rebuild the FIND HOW I CAN HELP modal with recommended match cards (FreshBite 96%, Green Plate 88%)
 - [x] Implement calculateMatchScore() with the 0.30/0.25/0.20/0.15/0.10 weighted formula
 - [x] Add WHY THIS MATCH? breakdown with per-factor progress bars and overall score
-- [ ] Verify build and preview
+- [x] Verified in preview: modal, cards, and breakdown all render
