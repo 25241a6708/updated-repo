@@ -38,7 +38,7 @@ function LeaderboardPage() {
 
         <div className="mt-8 grid gap-5 lg:grid-cols-3 lg:items-end">
           {podium.map((c) => {
-            const style = podiumStyle[c.rank - 1];
+            const style = podiumStyle[c.rank - 1]!;
             const Icon = style.icon;
             return (
               <div key={c.name} className={`rounded-lg border-2 ${style.ring} bg-card p-6 text-center shadow-sm ${style.lift}`}>
